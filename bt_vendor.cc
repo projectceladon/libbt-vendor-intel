@@ -33,9 +33,11 @@
 
 #include "bt_vendor_lib.h"
 #include <utils/Log.h>
+#include <log/log.h>
 #include <cutils/properties.h>
 
 #define BTPROTO_HCI 1
+#define BDADDR_SIZE 6
 #define HCI_CHANNEL_USER 1
 #define HCI_CHANNEL_CONTROL 3
 #define HCI_DEV_NONE 0xffff
@@ -50,6 +52,12 @@
 #define MGMT_EV_POLL_TIMEOUT 3000 /* 3000ms */
 
 #define IOCTL_HCIDEVDOWN _IOW('H', 202, int)
+
+#define ASSERT(condition) \
+  if (!(condition)) { \
+    ALOGI("%s:%d assertion '" #condition "' failed", __FILE__, __LINE__); \
+    abort(); \
+ }
 
 struct sockaddr_hci {
   sa_family_t hci_family;
@@ -79,7 +87,7 @@ struct mgmt_event_read_index {
 } __attribute__((packed));
 
 static const bt_vendor_callbacks_t* bt_vendor_callbacks;
-static unsigned char bt_vendor_local_bdaddr[6];
+static unsigned char bt_vendor_local_bdaddr[BDADDR_SIZE];
 static int bt_vendor_fd = -1;
 static int hci_interface;
 static int rfkill_en;
@@ -97,8 +105,8 @@ static int bt_vendor_init(const bt_vendor_callbacks_t* p_cb,
   }
 
   bt_vendor_callbacks = p_cb;
-
-  memcpy(bt_vendor_local_bdaddr, local_bdaddr, sizeof(bt_vendor_local_bdaddr));
+  ASSERT((sizeof(bt_vendor_local_bdaddr) >= BDADDR_SIZE))
+  memcpy(bt_vendor_local_bdaddr, local_bdadd, BDADDR_SIZE);
 
   property_get("bluetooth.interface", prop_value, "0");
 
@@ -267,7 +275,7 @@ static int bt_vendor_rfkill(int block) {
   int fd;
 
   ALOGI("%s", __func__);
-
+  setegid(getpid());
   fd = open("/dev/rfkill", O_WRONLY);
   if (fd < 0) {
     ALOGE("Unable to open /dev/rfkill");
