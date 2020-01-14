@@ -24,7 +24,9 @@ ifeq ($(BOARD_HAVE_BLUETOOTH_INTEL_ICNV), true)
 include $(CLEAR_VARS)
 
 LOCAL_CPP_EXTENSION := .cc
-
+LOCAL_CPPFLAGS := -fno-strict-overflow \
+                  -fno-delete-null-pointer-checks \
+                  -fwrapv
 LOCAL_SRC_FILES := \
         bt_vendor.cc
 
