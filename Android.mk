@@ -27,6 +27,13 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_CPPFLAGS := -fno-strict-overflow \
                   -fno-delete-null-pointer-checks \
                   -fwrapv
+LOCAL_CPPFLAGS += \
+                  -D_FORTIFY_SOURCE=2 \
+                  -fstack-protector-strong \
+                  -Wno-conversion-null \
+                  -Wnull-dereference \
+                  -Werror \
+                  -Warray-bounds
 LOCAL_SRC_FILES := \
         bt_vendor.cc
 
