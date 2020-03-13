@@ -32,7 +32,9 @@ LOCAL_CPPFLAGS := -fno-strict-overflow \
                   -Wno-conversion-null \
                   -Wnull-dereference \
                   -Werror \
-                  -Warray-bounds
+                  -Warray-bounds \
+                  -Wformat -Wformat-security \
+                  -Werror=format-security
 LOCAL_SRC_FILES := \
         bt_vendor.cc
 
