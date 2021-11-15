@@ -99,18 +99,18 @@ static int bt_vendor_init(const bt_vendor_callbacks_t* p_cb,
   bt_vendor_callbacks = p_cb;
 
   memcpy(bt_vendor_local_bdaddr, local_bdaddr, sizeof(bt_vendor_local_bdaddr));
-
-  property_get("bluetooth.interface", prop_value, "0");
-
-  errno = 0;
-  if (memcmp(prop_value, "hci", 3))
-    hci_interface = strtol(prop_value, (char **)NULL, 10);
-  else
-    hci_interface = strtol(prop_value + 3, (char **)NULL, 10);
-  if (errno) hci_interface = 0;
-
-  ALOGI("Using interface hci%d", hci_interface);
-
+  /* Commenting below code as we are not using the property
+  *property_get("bluetooth.interface", prop_value, "0");
+  *
+  *errno = 0;
+  *if (memcmp(prop_value, "hci", 3))
+  *  hci_interface = strtol(prop_value, (char **)NULL, 10);
+  *else
+  *  hci_interface = strtol(prop_value + 3, (char **)NULL, 10);
+  *if (errno) hci_interface = 0;
+  *
+  *ALOGI("Using interface hci%d", hci_interface);
+  */
   property_get("bluetooth.rfkill", prop_value, "0");
 
   rfkill_en = atoi(prop_value);
@@ -202,19 +202,30 @@ static int bt_vendor_wait_hcidev(void) {
         ret = -1;
         break;
       }
-
-      if (ev.opcode == MGMT_EV_INDEX_ADDED && ev.index == hci_interface) {
+      /* Default hci interface is hci0. Android will check for hci0
+       * and if it is not available check if hci1 is available
+       */
+      if (ev.opcode == MGMT_EV_INDEX_ADDED && ev.index == 0) {
+        hci_interface = 0;
+        goto end;
+      } else if (ev.opcode == MGMT_EV_INDEX_ADDED && ev.index == 1) {
+        hci_interface = 1;
         goto end;
       } else if (ev.opcode == MGMT_EV_COMMAND_COMP) {
         struct mgmt_event_read_index* cc;
         int i;
-
         cc = (struct mgmt_event_read_index*)ev.data;
 
         if (cc->cc_opcode != MGMT_OP_INDEX_LIST || cc->status != 0) continue;
 
         for (i = 0; i < cc->num_intf; i++) {
-          if (cc->index[i] == hci_interface) goto end;
+          if (cc->index[i] == 0) {
+            hci_interface = 0;
+            goto end;
+          } else if(cc->index[i] == 1) {
+            hci_interface = 1;
+            goto end;
+	  }
         }
       }
     }
