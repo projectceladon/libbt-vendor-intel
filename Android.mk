@@ -39,7 +39,7 @@ LOCAL_SRC_FILES := \
         bt_vendor.cc
 
 LOCAL_C_INCLUDES := \
-        $(TOP_DIR)system/bt/hci/include
+        $(TOP_DIR)packages/modules/Bluetooth/system/hci/include
 
 LOCAL_SHARED_LIBRARIES := \
         liblog \
