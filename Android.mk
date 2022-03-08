@@ -24,8 +24,7 @@ ifeq ($(BOARD_HAVE_BLUETOOTH_INTEL_ICNV), true)
 include $(CLEAR_VARS)
 
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CPPFLAGS := -fno-strict-overflow \
-                  -fno-delete-null-pointer-checks \
+LOCAL_CPPFLAGS := -fno-delete-null-pointer-checks \
                   -fwrapv \
                   -D_FORTIFY_SOURCE=2 \
                   -fstack-protector-strong \
