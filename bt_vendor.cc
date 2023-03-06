@@ -174,7 +174,7 @@ static int bt_vendor_wait_hcidev(void) {
   ev.len = 0;
 
   ssize_t wrote;
-  wrote = write(fd, &ev, 6);
+  wrote = write(fd, &ev, sizeof(mgmt_pkt));
   if (wrote != 6) {
     ALOGE("Unable to write mgmt command: %s", strerror(errno));
     ret = -1;
@@ -213,9 +213,9 @@ static int bt_vendor_wait_hcidev(void) {
 
         if (cc->cc_opcode != MGMT_OP_INDEX_LIST || cc->status != 0) continue;
 
-        for (i = 0; i < cc->num_intf; i++) {
-          if (cc->index[i] == hci_interface) goto end;
-        }
+        if (cc->num_intf > 0)
+          for (i = 0; i < cc->num_intf; i++)
+            if (cc->index[i] == hci_interface) goto end;
       }
     }
   }
