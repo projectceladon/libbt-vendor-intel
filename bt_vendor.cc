@@ -174,7 +174,7 @@ static int bt_vendor_wait_hcidev(void) {
   ev.len = 0;
 
   ssize_t wrote;
-  wrote = write(fd, &ev, sizeof(mgmt_pkt));
+  wrote = write(fd, &ev, sizeof(mgmt_pkt) - MGMT_EV_SIZE_MAX);
   if (wrote != 6) {
     ALOGE("Unable to write mgmt command: %s", strerror(errno));
     ret = -1;
