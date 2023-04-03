@@ -51,6 +51,10 @@
 
 #define IOCTL_HCIDEVDOWN _IOW('H', 202, int)
 
+/* Maximum two physical interfaces are supported.
+ * Increase as and when more interfaces are supported. */
+#define MAX_HCI_INTF_SUPP 2
+
 struct sockaddr_hci {
   sa_family_t hci_family;
   unsigned short hci_dev;
@@ -88,6 +92,7 @@ static int bt_hwcfg_en;
 static int bt_vendor_init(const bt_vendor_callbacks_t* p_cb,
                           unsigned char* local_bdaddr) {
   char prop_value[PROPERTY_VALUE_MAX];
+  int ret;
 
   ALOGI("%s", __func__);
 
@@ -100,7 +105,10 @@ static int bt_vendor_init(const bt_vendor_callbacks_t* p_cb,
 
   memcpy(bt_vendor_local_bdaddr, local_bdaddr, sizeof(bt_vendor_local_bdaddr));
 
-  property_get("bluetooth.interface", prop_value, "0");
+  ret = property_get("bluetooth.interface", prop_value, "0");
+  if (!ret ) {
+    ALOGE("Couldn't get bluetooth.interface (%d)", ret);
+  }
 
   errno = 0;
   if (memcmp(prop_value, "hci", 3))
@@ -111,7 +119,10 @@ static int bt_vendor_init(const bt_vendor_callbacks_t* p_cb,
 
   ALOGI("Using interface hci%d", hci_interface);
 
-  property_get("bluetooth.rfkill", prop_value, "0");
+  ret = property_get("bluetooth.rfkill", prop_value, "0");
+  if (!ret ) {
+    ALOGE("Couldn't get bluetooth.rfkill (%d)", ret);
+  }
 
   rfkill_en = atoi(prop_value);
   if (rfkill_en) ALOGI("RFKILL enabled");
@@ -172,6 +183,7 @@ static int bt_vendor_wait_hcidev(void) {
   ev.opcode = MGMT_OP_INDEX_LIST;
   ev.index = HCI_DEV_NONE;
   ev.len = 0;
+  memset(ev.data, 0, sizeof(ev.data));
 
   ssize_t wrote;
   wrote = write(fd, &ev, sizeof(mgmt_pkt));
@@ -213,7 +225,7 @@ static int bt_vendor_wait_hcidev(void) {
 
         if (cc->cc_opcode != MGMT_OP_INDEX_LIST || cc->status != 0) continue;
 
-        if (cc->num_intf > 0)
+        if (cc->num_intf > 0 && cc->num_intf <= MAX_HCI_INTF_SUPP)
           for (i = 0; i < cc->num_intf; i++)
             if (cc->index[i] == hci_interface) goto end;
       }
