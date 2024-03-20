@@ -180,6 +180,7 @@ static int bt_vendor_wait_hcidev(void) {
   fds[0].events = POLLIN;
 
   /* Read Controller Index List Command */
+  memset(&ev, 0, sizeof(ev));
   ev.opcode = MGMT_OP_INDEX_LIST;
   ev.index = HCI_DEV_NONE;
   ev.len = 0;
