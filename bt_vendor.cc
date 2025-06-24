@@ -119,9 +119,9 @@ static int bt_vendor_init(const bt_vendor_callbacks_t* p_cb,
 
   ALOGI("Using interface hci%d", hci_interface);
 
-  ret = property_get("bluetooth.rfkill", prop_value, "0");
+  ret = property_get("vendor.bluetooth.rfkill", prop_value, "0");
   if (!ret ) {
-    ALOGE("Couldn't get bluetooth.rfkill (%d)", ret);
+    ALOGE("Couldn't get vendor.bluetooth.rfkill (%d)", ret);
   }
 
   rfkill_en = atoi(prop_value);
